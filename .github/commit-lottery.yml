@@ -1,0 +1,47 @@
+name: Commit Lottery
+
+on: push
+
+jobs:
+  commit-lottery:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Generate daily SHA
+      id: generate_sha
+      run: |
+        echo "SHA=$(date -u +%Y%m%d | sha256sum | head -c 7)" >> $GITHUB_ENV
+        echo "Generated SHA: $SHA"
+
+    - name: Get current commit SHA
+      id: get_commit_sha
+      run: echo "COMMIT_SHA=${{ github.sha }}" >> $GITHUB_ENV
+
+    - name: Check commit lottery
+      run: |
+        GENERATED_SHA=${{ env.SHA }}
+        COMMIT_SHA=${{ env.COMMIT_SHA }}
+        
+        MATCH_COUNT=0
+        for (( i=0; i<${#GENERATED_SHA}; i++ )); do
+          if [[ ${GENERATED_SHA:$i:1} == ${COMMIT_SHA:$i:1} ]]; then
+            (( MATCH_COUNT++ ))
+          fi
+        done
+        
+        echo "Generated SHA: $GENERATED_SHA"
+        echo "Commit SHA: ${COMMIT_SHA:0:7}"
+        echo "Match Count: $MATCH_COUNT"
+        
+        if [ "$MATCH_COUNT" -ge 5 ]; then
+          echo "You won the first prize!"
+        elif [ "$MATCH_COUNT" -eq 4 ]; then
+          echo "You won the second prize!"
+        elif [ "$MATCH_COUNT" -eq 3 ]; then
+          echo "You won the third prize!"
+        else
+          echo "No prize this time."
+        fi
