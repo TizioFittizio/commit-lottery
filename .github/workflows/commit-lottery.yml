@@ -23,8 +23,9 @@ jobs:
     - name: Check commit lottery
       run: |
         WINNING_SHA=${{ env.WINNING_SHA }}
-        COMMIT_SHA=${{ env.COMMIT_SHA:0:7 }}
-        
+        COMMIT_SHA=${{ env.COMMIT_SHA }}
+        COMMIT_SHA=${COMMIT_SHA:0:7}
+
         MATCH_COUNT=0
 
         for (( i=0; i<${#WINNING_SHA}; i++ )); do
